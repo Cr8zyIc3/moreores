@@ -1,351 +1,386 @@
+--[[
+=====================================================================
+** More Ores **
+By Calinou, with the help of Nore.
 
--- More Ores
--- Original mod by Calinou with help from Nore
--- Re-coded by TenPlus1
+Copyright © 2011-2020 Hugo Locurcio and contributors.
+Licensed under the zlib license. See LICENSE.md for more information.
+=====================================================================
+--]]
 
+moreores = {}
 
 -- Load support for intllib.
+local modpath = minetest.get_modpath("moreores")
 
-local MP = minetest.get_modpath(minetest.get_current_modname())
-local S = minetest.get_translator and minetest.get_translator("moreores") or
-		dofile(MP .. "/intllib.lua")
+local S = minetest.get_translator("moreores")
+moreores.S = S
 
--- Minerals
+dofile(modpath .. "/_config.txt")
 
-minetest.register_node("moreores:mineral_silver", {
-	description = S("@1 Ore", S("Silver")),
-	tiles = {"default_stone.png^moreores_mineral_silver.png"},
-	groups = {cracky = 3},
-	sounds = default.node_sound_stone_defaults(),
-	drop = "moreores:silver_lump"
-})
+-- `mg` mapgen support
+if minetest.get_modpath("mg") then
+	dofile(modpath .. "/mg.lua")
+end
 
-minetest.register_node("moreores:mineral_mithril", {
-	description = S("@1 Ore", S("Mithril")),
-	tiles = {"default_stone.png^moreores_mineral_mithril.png"},
-	groups = {cracky = 3},
-	sounds = default.node_sound_stone_defaults(),
-	drop = "moreores:mithril_lump"
-})
+-- `frame` support
+local use_frame = minetest.get_modpath("frame")
 
--- Ores
+local default_stone_sounds = default.node_sound_stone_defaults()
+local default_metal_sounds = default.node_sound_metal_defaults()
 
-minetest.register_craftitem("moreores:silver_lump", {
-	description = S("@1 Lump", S("Silver")),
-	inventory_image = "moreores_silver_lump.png"
-})
-
-minetest.register_craftitem("moreores:mithril_lump", {
-	description = S("@1 Lump", S("Mithril")),
-	inventory_image = "moreores_mithril_lump.png"
-})
-
--- Ingots
-
-minetest.register_craftitem("moreores:silver_ingot", {
-	description = S("@1 Ingot", S("Silver")),
-	inventory_image = "moreores_silver_ingot.png"
-})
-
-minetest.register_craftitem("moreores:mithril_ingot", {
-	description = S("@1 Ingot", S("Mithril")),
-	inventory_image = "moreores_mithril_ingot.png"
-})
-
--- Helpers
-
-local c = "moreores:silver_ingot"
-local m = "moreores:mithril_ingot"
-
--- Cooking Ores into Ingots
-
-minetest.register_craft({
-	type = "cooking",
-	output = c,
-	recipe = "moreores:silver_lump"
-})
-
-minetest.register_craft({
-	type = "cooking",
-	output = m,
-	recipe = "moreores:mithril_lump"
-})
-
--- Blocks
-
-minetest.register_node("moreores:silver_block", {
-	description = S("@1 Block", S("Silver")),
-	tiles = {"moreores_silver_block.png"},
-	groups = {snappy = 1, bendy = 2, cracky = 1, melty = 2, level = 2},
-	sounds = default.node_sound_metal_defaults()
-})
-
-minetest.register_node("moreores:mithril_block", {
-	description = S("@1 Block", S("Mithril")),
-	tiles = {"moreores_mithril_block.png"},
-	groups = {snappy = 1, bendy = 2, cracky = 1, melty = 2, level = 2},
-	sounds = default.node_sound_metal_defaults()
-})
-
--- Ingot to Block Crafts and vice-versa
-
-minetest.register_craft( {
-	output = "moreores:silver_block",
-	recipe = {{c, c, c}, {c, c, c}, {c, c, c}}
-})
-
-minetest.register_craft( {
-	output = c .. " 9",
-	recipe = {{"moreores:silver_block"}}
-})
-
-minetest.register_craft( {
-	output = "moreores:mithril_block",
-	recipe = {{m, m, m}, {m, m, m}, {m, m, m}}
-})
-
-minetest.register_craft( {
-	output = m .. " 9",
-	recipe = {{"moreores:mithril_block"}}
-})
-
--- Mapgen Ores
-
-minetest.register_ore({
-	ore_type = "scatter",
-	ore = "moreores:mineral_silver",
-	wherein = "default:stone",
-	clust_scarcity = 11 * 11 * 11,
-	clust_num_ores = 4,
-	clust_size = 11,
-	y_min = -31000,
-	y_max = -2
-})
-
-minetest.register_ore({
-	ore_type = "scatter",
-	ore = "moreores:mineral_mithril",
-	wherein = "default:stone",
-	clust_scarcity = 11 * 11 * 11,
-	clust_num_ores = 1,
-	clust_size = 11,
-	y_min = -31000,
-	y_max = -512
-})
-
--- Silver Tools
-
-minetest.register_tool("moreores:pick_silver", {
-	description = S("@1 Pickaxe", S("Silver")),
-	inventory_image = "moreores_tool_silverpick.png",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 1.0,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 6},
-		groupcaps = {
-			cracky = {
-				times = {[1] = 2.60, [2] = 1.00, [3] = 0.60}, uses = 100, maxlevel = 1}
+-- Returns the crafting recipe table for a given material and item.
+local function get_recipe(material, item)
+	if item == "sword" then
+		return {
+			{material},
+			{material},
+			{"group:stick"},
 		}
-	}
-})
-
-minetest.register_tool("moreores:shovel_silver", {
-	description = S("@1 Shovel", S("Silver")),
-	inventory_image = "moreores_tool_silvershovel.png",
-	wield_image = "moreores_tool_silvershovel.png^[transformR90",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 1.0,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 6},
-		groupcaps = {
-			crumbly = {
-				times = {[1] = 1.10, [2] = 0.40, [3] = 0.25}, uses = 100, maxlevel = 1}
+	end
+	if item == "shovel" then
+		return {
+			{material},
+			{"group:stick"},
+			{"group:stick"},
 		}
-	}
-})
-
-minetest.register_tool("moreores:axe_silver", {
-	description = S("@1 Axe", S("Silver")),
-	inventory_image = "moreores_tool_silveraxe.png",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 1.0,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 6},
-		groupcaps = {
-			fleshy = {times = {[2] = 1.10, [3] = 0.60}, uses = 100, maxlevel = 1},
-			choppy = {
-				times = {[1] = 2.50, [2] = 0.80, [3] = 0.50}, uses = 100, maxlevel = 1}
+	end
+	if item == "axe" then
+		return {
+			{material, material},
+			{material, "group:stick"},
+			{"", "group:stick"},
 		}
-	}
-})
-
-minetest.register_tool("moreores:sword_silver", {
-	description = S("@1 Sword", S("Silver")),
-	inventory_image = "moreores_tool_silversword.png",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 1.0,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 6},
-		groupcaps = {
-			fleshy = {times = {[2] = 0.70, [3] = 0.30}, uses = 100, maxlevel = 1},
-			snappy = {times = {[2] = 0.70, [3] = 0.30}, uses = 100, maxlevel = 1},
-			choppy = {times = {[3] = 0.80}, uses = 100, maxlevel = 0}
+	end
+	if item == "pick" then
+		return {
+			{material, material, material},
+			{"", "group:stick", ""},
+			{"", "group:stick", ""},
 		}
-	}
-})
-
--- Silver Tool Crafts
-
-minetest.register_craft({
-	output = "moreores:pick_silver",
-	recipe = {{c, c, c}, {"", "group:stick", ""}, {"", "group:stick", ""}}
-})
-
-minetest.register_craft({
-	output = "moreores:shovel_silver",
-	recipe = {{c}, {"group:stick"}, {"group:stick"}}
-})
-
-minetest.register_craft({
-	output = "moreores:axe_silver",
-	recipe = {{c, c}, {c, "group:stick"}, {"", "group:stick"}}
-})
-
-minetest.register_craft({
-	output = "moreores:sword_silver",
-	recipe = {{c}, {c}, {"group:stick"}}
-})
-
--- Mithril Tools
-
-minetest.register_tool("moreores:pick_mithril", {
-	description = S("@1 Pickaxe", S("Mithril")),
-	inventory_image = "moreores_tool_mithrilpick.png",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 0.45,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 9},
-		groupcaps = {
-			cracky = {
-				times = {[1] = 2.25, [2] = 0.55, [3] = 0.35}, uses = 200, maxlevel = 2}
+	end
+	if item == "block" then
+		return {
+			{material, material, material},
+			{material, material, material},
+			{material, material, material},
 		}
-	}
-})
-
-minetest.register_tool("moreores:shovel_mithril", {
-	description = S("@1 Shovel", S("Mithril")),
-	inventory_image = "moreores_tool_mithrilshovel.png",
-	wield_image = "moreores_tool_mithrilshovel.png^[transformR90",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 0.45,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 9},
-		groupcaps = {
-			crumbly = {
-				times = {[1] = 0.70, [2] = 0.35, [3] = 0.20}, uses = 200, maxlevel = 2}
+	end
+	if item == "lockedchest" then
+		return {
+			{"group:wood", "group:wood", "group:wood"},
+			{"group:wood", material, "group:wood"},
+			{"group:wood", "group:wood", "group:wood"},
 		}
-	}
-})
+	end
+end
 
-minetest.register_tool("moreores:axe_mithril", {
-	description = S("@1 Axe", S("Mithril")),
-	inventory_image = "moreores_tool_mithrilaxe.png",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 0.45,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 9},
-		groupcaps = {
-			fleshy = {times = {[2] = 0.95, [3] = 0.30}, uses = 200, maxlevel = 1},
-			choppy = {
-				times = {[1] = 1.75, [2] = 0.45, [3] = 0.45}, uses = 200, maxlevel = 2}
-		}
-	}
-})
+local function add_ore(modname, description, mineral_name, oredef)
+	local img_base = modname .. "_" .. mineral_name
+	local toolimg_base = modname .. "_tool_"..mineral_name
+	local tool_base = modname .. ":"
+	local tool_post = "_" .. mineral_name
+	local item_base = tool_base .. mineral_name
+	local ingot = item_base .. "_ingot"
+	local lump_item = item_base .. "_lump"
 
-minetest.register_tool("moreores:sword_mithril", {
-	description = S("@1 Sword", S("Mithril")),
-	inventory_image = "moreores_tool_mithrilsword.png",
-	sound = {breaks = "default_tool_breaks"},
-	tool_capabilities = {
-		full_punch_interval = 0.45,
-		max_drop_level = 3,
-		damage_groups = {fleshy = 9},
-		groupcaps = {
-			fleshy = {times = {[2] = 0.65, [3] = 0.25}, uses = 200, maxlevel = 2},
-			snappy = {times = {[2] = 0.70, [3] = 0.25}, uses = 200, maxlevel = 2},
-			choppy = {times = {[3] = 0.65}, uses = 200, maxlevel = 0}
-		}
-	}
-})
+	if oredef.makes.ore then
+		minetest.register_node(modname .. ":mineral_" .. mineral_name, {
+			description = S("@1 Ore", S(description)),
+			tiles = {"default_stone.png^" .. modname .. "_mineral_" .. mineral_name .. ".png"},
+			groups = {cracky = 2},
+			sounds = default_stone_sounds,
+			drop = lump_item,
+		})
 
--- Mithril Tool Crafts
+		if use_frame then
+			frame.register(modname .. ":mineral_" .. mineral_name)
+		end
+	end
 
-minetest.register_craft({
-	output = "moreores:pick_mithril",
-	recipe = {{m, m, m}, {"", "group:stick", ""}, {"", "group:stick", ""}}
-})
-
-minetest.register_craft({
-	output = "moreores:shovel_mithril",
-	recipe = {{m}, {"group:stick"}, {"group:stick"}}
-})
-
-minetest.register_craft({
-	output = "moreores:axe_mithril",
-	recipe = {{m, m}, {m, "group:stick"}, {"", "group:stick"}}
-})
-
-minetest.register_craft({
-	output = "moreores:sword_mithril",
-	recipe = {{m}, {m}, {"group:stick"}}
-})
-
--- Compatibility
-
-minetest.register_alias("moreores:mineral_tin", "default:stone_with_tin")
-minetest.register_alias("moreores:tin_ingot", "default:tin_ingot")
-minetest.register_alias("moreores:tin_block", "default:tinblock")
-minetest.register_alias("moreores:tin_lump", "default:tin_lump")
-minetest.register_alias("moreores:copper_rail", "carts:rail")
-
--- Toolranks Mod Support
-
-if minetest.get_modpath("toolranks") then
-
-	local tools = {
-
-		"moreores:pick_silver", "moreores:axe_silver",
-		"moreores:shovel_silver", "moreores:sword_silver",
-
-		"moreores:pick_mithril", "moreores:axe_mithril",
-		"moreores:shovel_mithril", "moreores:sword_mithril",
-	}
-
-
-	-- Loop through tool list and add new toolranks description
-	for n = 1, #tools do
-
-		local name = tools[n]
-		local def = minetest.registered_tools[name]
-		local desc = def and def.description
-
-		if desc then
-
-			minetest.override_item(name, {
-				original_description = desc,
-				description = toolranks.create_description(desc, 0, 1),
-				after_use = toolranks.new_afteruse
+	if oredef.makes.block then
+		local block_item = item_base .. "_block"
+		minetest.register_node(block_item, {
+			description = S("@1 Block", S(description)),
+			tiles = {img_base .. "_block.png"},
+			groups = {snappy = 1, bendy = 2, cracky = 1, melty = 2, level = 2},
+			sounds = default_metal_sounds,
+		})
+		minetest.register_alias(mineral_name.."_block", block_item)
+		if oredef.makes.ingot then
+			minetest.register_craft( {
+				output = block_item,
+				recipe = get_recipe(ingot, "block")
 			})
+			minetest.register_craft( {
+				output = ingot .. " 9",
+				recipe = {
+					{block_item},
+				}
+			})
+		end
+		if use_frame then
+			frame.register(block_item)
+		end
+	end
+
+	if oredef.makes.lump then
+		minetest.register_craftitem(lump_item, {
+			description = S("@1 Lump", S(description)),
+			inventory_image = img_base .. "_lump.png",
+		})
+		minetest.register_alias(mineral_name .. "_lump", lump_item)
+		if oredef.makes.ingot then
+			minetest.register_craft({
+				type = "cooking",
+				output = ingot,
+				recipe = lump_item,
+			})
+		end
+		if use_frame then
+			frame.register(lump_item)
+		end
+	end
+
+	if oredef.makes.ingot then
+		minetest.register_craftitem(ingot, {
+			description = S("@1 Ingot", S(description)),
+			inventory_image = img_base .. "_ingot.png",
+		})
+		minetest.register_alias(mineral_name .. "_ingot", ingot)
+		if use_frame then
+			frame.register(ingot)
+		end
+	end
+
+	if oredef.makes.chest then
+		minetest.register_craft( {
+			output = "default:chest_locked",
+			recipe = {
+				{ingot},
+				{"default:chest"},
+			}
+		})
+		minetest.register_craft( {
+			output = "default:chest_locked",
+			recipe = get_recipe(ingot, "lockedchest")
+		})
+	end
+
+	oredef.oredef.ore_type = "scatter"
+	oredef.oredef.ore = modname .. ":mineral_" .. mineral_name
+	oredef.oredef.wherein = "default:stone"
+
+	minetest.register_ore(oredef.oredef)
+
+	for tool_name, tooldef in pairs(oredef.tools) do
+		local tdef = {
+			description = "",
+			inventory_image = toolimg_base .. tool_name .. ".png",
+			tool_capabilities = {
+				max_drop_level = 3,
+				groupcaps = tooldef,
+			},
+			sound = {breaks = "default_tool_breaks"},
+		}
+
+		if tool_name == "sword" then
+			tdef.tool_capabilities.full_punch_interval = oredef.full_punch_interval
+			tdef.tool_capabilities.damage_groups = oredef.damage_groups
+			tdef.description = S("@1 Sword", S(description))
+		end
+
+		if tool_name == "pick" then
+			tdef.tool_capabilities.full_punch_interval = oredef.full_punch_interval
+			tdef.tool_capabilities.damage_groups = oredef.damage_groups
+			tdef.description = S("@1 Pickaxe", S(description))
+		end
+
+		if tool_name == "axe" then
+			tdef.tool_capabilities.full_punch_interval = oredef.full_punch_interval
+			tdef.tool_capabilities.damage_groups = oredef.damage_groups
+			tdef.description = S("@1 Axe", S(description))
+		end
+
+		if tool_name == "shovel" then
+			tdef.full_punch_interval = oredef.full_punch_interval
+			tdef.tool_capabilities.damage_groups = oredef.damage_groups
+			tdef.description = S("@1 Shovel", S(description))
+			tdef.wield_image = toolimg_base .. tool_name .. ".png^[transformR90"
+		end
+
+		local fulltool_name = tool_base .. tool_name .. tool_post
+
+		if tool_name == "hoe" and minetest.get_modpath("farming") then
+			tdef.max_uses = tooldef.uses
+			tdef.description = S("@1 Hoe", S(description))
+			farming.register_hoe(fulltool_name, tdef)
+		end
+
+		-- Hoe registration is handled above.
+		-- There are no crafting recipes for hoes, as they have been
+		-- deprecated from Minetest Game:
+		-- https://github.com/minetest/minetest_game/commit/9c459e77a
+		if tool_name ~= "hoe" then
+			minetest.register_tool(fulltool_name, tdef)
+
+			if oredef.makes.ingot then
+				minetest.register_craft({
+					output = fulltool_name,
+					recipe = get_recipe(ingot, tool_name)
+				})
+			end
+		end
+
+		-- Toolranks support
+		if minetest.get_modpath("toolranks") then
+			minetest.override_item(fulltool_name, {
+				original_description = tdef.description,
+				description = toolranks.create_description(tdef.description, 0, 1),
+				after_use = toolranks.new_afteruse})
+		end
+
+		minetest.register_alias(tool_name .. tool_post, fulltool_name)
+		if use_frame then
+			frame.register(fulltool_name)
 		end
 	end
 end
 
+local oredefs = {
+	silver = {
+		description = "Silver",
+		makes = {ore = true, block = true, lump = true, ingot = true, chest = true},
+		oredef = {
+			clust_scarcity = moreores.silver_chunk_size ^ 3,
+			clust_num_ores = moreores.silver_ore_per_chunk,
+			clust_size = moreores.silver_chunk_size,
+			y_min = moreores.silver_min_depth,
+			y_max = moreores.silver_max_depth,
+		},
+		tools = {
+			pick = {
+				cracky = {times = {[1] = 2.60, [2] = 1.00, [3] = 0.60}, uses = 100, maxlevel = 1},
+			},
+			hoe = {
+				uses = 300,
+			},
+			shovel = {
+				crumbly = {times = {[1] = 1.10, [2] = 0.40, [3] = 0.25}, uses = 100, maxlevel = 1},
+			},
+			axe = {
+				choppy = {times = {[1] = 2.50, [2] = 0.80, [3] = 0.50}, uses = 100, maxlevel = 1},
+				fleshy = {times = {[2] = 1.10, [3] = 0.60}, uses = 100, maxlevel = 1}
+			},
+			sword = {
+				fleshy = {times = {[2] = 0.70, [3] = 0.30}, uses = 100, maxlevel = 1},
+				snappy = {times = {[2] = 0.70, [3] = 0.30}, uses = 100, maxlevel = 1},
+				choppy = {times = {[3] = 0.80}, uses = 100, maxlevel = 0},
+			},
+		},
+		full_punch_interval = 1.0,
+		damage_groups = {fleshy = 6},
+	},
+	mithril = {
+		description = "Mithril",
+		makes = {ore = true, block = true, lump = true, ingot = true, chest = false},
+		oredef = {
+			clust_scarcity = moreores.mithril_chunk_size ^ 3,
+			clust_num_ores = moreores.mithril_ore_per_chunk,
+			clust_size = moreores.mithril_chunk_size,
+			y_min = moreores.mithril_min_depth,
+			y_max = moreores.mithril_max_depth,
+		},
+		tools = {
+			pick = {
+				cracky = {times = {[1] = 2.25, [2] = 0.55, [3] = 0.35}, uses = 200, maxlevel = 2}
+			},
+			hoe = {
+				uses = 1000,
+			},
+			shovel = {
+				crumbly = {times = {[1] = 0.70, [2] = 0.35, [3] = 0.20}, uses = 200, maxlevel = 2},
+			},
+			axe = {
+				choppy = {times = {[1] = 1.75, [2] = 0.45, [3] = 0.45}, uses = 200, maxlevel = 2},
+				fleshy = {times = {[2] = 0.95, [3] = 0.30}, uses = 200, maxlevel = 1}
+			},
+			sword = {
+				fleshy = {times = {[2] = 0.65, [3] = 0.25}, uses = 200, maxlevel = 2},
+				snappy = {times = {[2] = 0.70, [3] = 0.25}, uses = 200, maxlevel = 2},
+				choppy = {times = {[3] = 0.65}, uses = 200, maxlevel = 0},
+			},
+		},
+		full_punch_interval = 0.45,
+		damage_groups = {fleshy = 9},
+	}
+}
 
-print ("[MOD] moreores " .. S("loaded"))
+-- If tin is available in the `default` mod, don't register More Ores' variant of tin
+local default_tin
+if minetest.registered_items["default:tin_ingot"] then
+	default_tin = true
+else
+	default_tin = false
+end
+
+if default_tin then
+	minetest.register_alias("moreores:mineral_tin", "default:stone_with_tin")
+	minetest.register_alias("moreores:tin_lump", "default:tin_lump")
+	minetest.register_alias("moreores:tin_ingot", "default:tin_ingot")
+	minetest.register_alias("moreores:tin_block", "default:tinblock")
+else
+	oredefs.tin = {
+		description = "Tin",
+		makes = {ore = true, block = true, lump = true, ingot = true, chest = false},
+		oredef = {
+			clust_scarcity = moreores.tin_chunk_size ^ 3,
+			clust_num_ores = moreores.tin_ore_per_chunk,
+			clust_size = moreores.tin_chunk_size,
+			y_min = moreores.tin_min_depth,
+			y_max = moreores.tin_max_depth,
+		},
+		tools = {},
+	}
+
+	-- Bronze has some special cases, because it is made from copper and tin
+	minetest.register_craft({
+		type = "shapeless",
+		output = "default:bronze_ingot 3",
+		recipe = {
+			"moreores:tin_ingot",
+			"default:copper_ingot",
+			"default:copper_ingot",
+		},
+	})
+end
+
+-- Copper rail (unique node)
+if minetest.get_modpath("carts") then
+	carts:register_rail("moreores:copper_rail", {
+		description = S("Copper Rail"),
+		tiles = {
+			"moreores_copper_rail.png",
+			"moreores_copper_rail_curved.png",
+			"moreores_copper_rail_t_junction.png",
+			"moreores_copper_rail_crossing.png",
+		},
+		inventory_image = "moreores_copper_rail.png",
+		wield_image = "moreores_copper_rail.png",
+		groups = carts:get_rail_groups(),
+	}, {})
+end
+
+minetest.register_craft({
+	output = "moreores:copper_rail 24",
+	recipe = {
+		{"default:copper_ingot", "", "default:copper_ingot"},
+		{"default:copper_ingot", "group:stick", "default:copper_ingot"},
+		{"default:copper_ingot", "", "default:copper_ingot"},
+	},
+})
+
+for orename, def in pairs(oredefs) do
+	-- Register everything
+	add_ore("moreores", def.description, orename, def)
+end

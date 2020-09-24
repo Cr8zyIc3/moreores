@@ -1,6 +1,8 @@
+# textdomain: moreores
+
 # Translation by Calinou
 
-loaded=a été chargé
+[moreores] loaded.=[moreores] a été chargé.
 
 @1 Ore=Minerai en @1
 @1 Lump=Roche en @1
@@ -10,6 +12,12 @@ loaded=a été chargé
 @1 Shovel=Pelle en @1
 @1 Axe=Hache en @1
 @1 Sword=Épée en @1
+@1 Hoe=Houe en @1
 
+Copper=cuivre
+Tin=étain
+Bronze=bronze
 Silver=argent
+Gold=or
 Mithril=mithril
+Copper Rail=Rail en cuivre

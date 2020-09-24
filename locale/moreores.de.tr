@@ -1,6 +1,8 @@
+# textdomain: moreores
+
 # Translation by Xanthin
 
-loaded=geladen
+[moreores] loaded.=[moreores] geladen.
 
 @1 Ore=@1erz
 @1 Lump=@1klumpen
@@ -10,7 +12,11 @@ loaded=geladen
 @1 Shovel=@1schaufel
 @1 Axe=@1axt
 @1 Sword=@1schwert
-@1 Hoe=@1hacke
 
+Copper=Kupfer
+Tin=Zinn
+Bronze=Bronze
 Silver=Silber
+Gold=Gold
 Mithril=Mithril
+Copper Rail=Kupferschiene
