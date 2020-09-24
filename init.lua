@@ -10,7 +10,6 @@ Licensed under the zlib license. See LICENSE.md for more information.
 
 moreores = {}
 
--- Load support for intllib.
 local modpath = minetest.get_modpath("moreores")
 
 local S = minetest.get_translator("moreores")
